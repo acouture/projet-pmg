@@ -1,2 +1,0 @@
-/net/cremi/acouture/Master1/PMG/projet-pmg/fichiers/build/CMakeFiles/atoms.dir
-/net/cremi/acouture/Master1/PMG/projet-pmg/fichiers/build/libsotl/CMakeFiles/sotl.dir
