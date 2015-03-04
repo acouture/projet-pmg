@@ -70,7 +70,20 @@ static void seq_bounce (sotl_device_t *dev)
   sotl_atom_set_t *set = &dev->atom_set;
   sotl_domain_t *domain = &dev->domain;
 
-  //TODO
+  for (unsigned n = 0; n < set->natoms; n++) {
+    if(set->pos.x[n] < domain->min_ext[0]
+      || set->pos.x[n] > domain->max_ext[0]) {
+      set->speed.dx[n] *= -1;
+    }
+    if(set->pos.y[n] < domain->min_ext[1]
+      || set->pos.y[n] > domain->max_ext[1]) {
+      set->speed.dy[n] *= -1;
+    }
+    if(set->pos.z[n] < domain->min_ext[2]
+      || set->pos.z[n] > domain->max_ext[2]) {
+      set->speed.dz[n] *= -1;
+    }
+  }
 }
 
 static calc_t squared_distance (sotl_atom_set_t *set, unsigned p1, unsigned p2)
