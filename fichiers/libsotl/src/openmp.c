@@ -47,10 +47,13 @@ static void omp_update_vbo (sotl_device_t *dev)
 static void omp_move (sotl_device_t *dev)
 {
   sotl_atom_set_t *set = &dev->atom_set;
-
+  #pragma omp parallel for schedule(static)
   for (unsigned n = 0; n < set->natoms; n++) {
+    #pragma omp atomic
     set->pos.x[n] += set->speed.dx[n];
+    #pragma omp atomic
     set->pos.y[n] += set->speed.dy[n];
+    #pragma omp atomic
     set->pos.z[n] += set->speed.dz[n];
   }
 }
@@ -69,8 +72,18 @@ static void omp_bounce (sotl_device_t *dev)
 {
   sotl_atom_set_t *set = &dev->atom_set;
   sotl_domain_t *domain = &dev->domain;
-
-  //TODO
+  #pragma omp parallel for schedule(static)
+  for (unsigned n = 0; n < set->natoms; n++) {
+    #pragma omp atomic
+    set->speed.dx[n] *= (2*!(set->pos.x[n] < domain->min_ext[0]
+    || set->pos.x[n] > domain->max_ext[0]))-1;
+    #pragma omp atomic
+    set->speed.dy[n] *= (2*!(set->pos.y[n] < domain->min_ext[1]
+    || set->pos.y[n] > domain->max_ext[1]))-1;
+    #pragma omp atomic
+    set->speed.dz[n] *= (2*!(set->pos.z[n] < domain->min_ext[2]
+    || set->pos.z[n] > domain->max_ext[2]))-1;
+  }
 }
 
 static calc_t squared_distance (sotl_atom_set_t *set, unsigned p1, unsigned p2)
