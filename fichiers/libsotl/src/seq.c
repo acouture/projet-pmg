@@ -62,7 +62,9 @@ static void seq_gravity (sotl_device_t *dev)
   sotl_atom_set_t *set = &dev->atom_set;
   const calc_t g = 0.005;
 
-  //TODO
+  for (unsigned n = 0; n < set->natoms; n++) {
+    set->speed.dy[n] -= g;
+  }
 }
 
 static void seq_bounce (sotl_device_t *dev)
@@ -71,16 +73,16 @@ static void seq_bounce (sotl_device_t *dev)
   sotl_domain_t *domain = &dev->domain;
 
   for (unsigned n = 0; n < set->natoms; n++) {
-    if(set->pos.x[n] < domain->min_ext[0]
-      || set->pos.x[n] > domain->max_ext[0]) {
+    if(set->pos.x[n] + set->speed.dx[n] < domain->min_ext[0]
+      || set->pos.x[n] + set->speed.dx[n] > domain->max_ext[0]) {
       set->speed.dx[n] *= -1;
     }
-    if(set->pos.y[n] < domain->min_ext[1]
-      || set->pos.y[n] > domain->max_ext[1]) {
+    if(set->pos.y[n] + set->speed.dy[n] < domain->min_ext[1]
+      || set->pos.y[n] + set->speed.dy[n] > domain->max_ext[1]) {
       set->speed.dy[n] *= -1;
     }
-    if(set->pos.z[n] < domain->min_ext[2]
-      || set->pos.z[n] > domain->max_ext[2]) {
+    if(set->pos.z[n] + set->speed.dz[n] < domain->min_ext[2]
+      || set->pos.z[n] + set->speed.dz[n] > domain->max_ext[2]) {
       set->speed.dz[n] *= -1;
     }
   }
