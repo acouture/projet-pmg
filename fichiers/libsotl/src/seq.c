@@ -72,18 +72,20 @@ static void seq_bounce (sotl_device_t *dev)
   sotl_atom_set_t *set = &dev->atom_set;
   sotl_domain_t *domain = &dev->domain;
 
+  float bounce = -0.9;
+  
   for (unsigned n = 0; n < set->natoms; n++) {
     if(set->pos.x[n] + set->speed.dx[n] < domain->min_ext[0]
       || set->pos.x[n] + set->speed.dx[n] > domain->max_ext[0]) {
-      set->speed.dx[n] *= -0.9;
+      set->speed.dx[n] *= bounce;
     }
     if(set->pos.y[n] + set->speed.dy[n] < domain->min_ext[1]
       || set->pos.y[n] + set->speed.dy[n] > domain->max_ext[1]) {
-      set->speed.dy[n] *= -0.9;
+      set->speed.dy[n] *= bounce;
     }
     if(set->pos.z[n] + set->speed.dz[n] < domain->min_ext[2]
       || set->pos.z[n] + set->speed.dz[n] > domain->max_ext[2]) {
-      set->speed.dz[n] *= -0.9;
+      set->speed.dz[n] *= bounce;
     }
   }
 }

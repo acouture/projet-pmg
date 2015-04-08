@@ -64,14 +64,18 @@ static void omp_gravity (sotl_device_t *dev)
 {
   sotl_atom_set_t *set = &dev->atom_set;
   const calc_t g = 0.005;
-
-  // TODO
+  
+  for (unsigned n = 0; n < set->natoms; n++) {
+    set->speed.dy[n] -= g;
+  }
 }
 
 static void omp_bounce (sotl_device_t *dev)
 {
   sotl_atom_set_t *set = &dev->atom_set;
   sotl_domain_t *domain = &dev->domain;
+  
+  //float bounce = 0.9;
   #pragma omp parallel for
   for (unsigned n = 0; n < set->natoms; n++) {
     #pragma omp atomic
