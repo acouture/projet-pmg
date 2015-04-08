@@ -57,8 +57,12 @@ static void reshape (int w, int h)
 
 static unsigned true_redisplay = 1;
 
+static float mvmatrix[4][4];
+float normalized_vert[3] = { 0.0, 1.0, 0.0 };
+
 static void drawScene ()
 {
+
   if(sotl_rotate_camera) {
     float p, q;
     q = rotate_y + 180.0; q = q/360.0 * 2 * M_PI;
@@ -88,6 +92,11 @@ static void drawScene ()
     glRotatef (rotate_y, 0.0, 1.0, 0.0);
     glTranslatef (-center[0], -center[1], -center[2]);
 
+    glGetFloatv(GL_MODELVIEW_MATRIX, &mvmatrix[0][0]);
+    normalized_vert[0] = mvmatrix[0][1];
+    normalized_vert[1] = mvmatrix[1][1];
+    normalized_vert[2] = mvmatrix[2][1];
+
     true_redisplay = 0;
   }
 
@@ -104,6 +113,17 @@ static void drawScene ()
   glVertex3f (get_global_domain()->max_ext[0], get_global_domain()->min_ext[1], get_global_domain()->min_ext[2]); glNormal3f(0.0, 1.0, 0.0);
   glEnd ();
 
+  // Draw normalized vertical
+  /* glEnable (GL_BLEND); */
+  /* glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
+  /* glBegin (GL_LINES); */
+  /* glColor4f (1.f, 1.f, 0.f, 1.f); */
+  /* glVertex3f (center[0], center[1], center[2]); */
+  /* glVertex3f (center[0] + normalized_vert[0], */
+  /* 	      center[1] + normalized_vert[1], */
+  /* 	      center[2] + normalized_vert[2]); */
+  /* glEnd (); */
+  
 
 #ifdef SHOW_GRID
   // Draw partitionning wire frames

@@ -243,6 +243,9 @@ void ocl_write_buffers(sotl_device_t *dev)
 
 void ocl_one_step_move(sotl_device_t *dev)
 {
+  unsigned begin = atom_set_begin(&dev->atom_set);
+  unsigned end   = atom_set_end(&dev->atom_set);
+
   if (gravity_enabled)
     gravity (dev);
 
@@ -254,10 +257,38 @@ void ocl_one_step_move(sotl_device_t *dev)
     growing_ghost (dev);
 #endif
 
-  if (force_enabled)
-    // Classic n^2 compute force version
-    n2_lennard_jones (dev);
+  if (force_enabled) {
 
+    if (is_box_mode) {
+      reset_box_buffer(dev);
+      box_count_all_atoms(dev, begin, end);
+
+      // Calc boxes offsets
+      scan(dev, 0, dev->domain.total_boxes + 1);
+
+      // Sort atoms in boxes
+      {
+        copy_box_buffer(dev);
+
+	// Sort
+	box_sort_all_atoms(dev, begin, end);
+
+        // box_sort_all_atoms used alternate pos & speed buffer, so we should switch...
+	dev->cur_pb = 1 - dev->cur_pb;
+	dev->cur_sb = 1 - dev->cur_sb;
+      }
+
+      /* Compute potential */
+      box_lennard_jones(dev, begin, end);
+
+    } else { // !BOX_MODE
+
+      // Classic n^2 compute force version
+      n2_lennard_jones (dev);
+    }
+
+  }
+  
   if(detect_collision)
     atom_collision (dev);
 

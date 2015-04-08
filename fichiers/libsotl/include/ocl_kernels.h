@@ -26,6 +26,7 @@ void copy_int_buffer(sotl_device_t *dev, cl_mem *dst_buf, cl_mem *src_buf,
 void reset_int_buffer(sotl_device_t *dev, cl_mem *buffer, const unsigned begin,
                       const unsigned end);
 void reset_box_buffer(sotl_device_t *dev);
+void copy_box_buffer(sotl_device_t *dev);
 void scan(sotl_device_t *dev, const unsigned begin, const unsigned end);
 
 void box_count_all_atoms(sotl_device_t *dev, const unsigned begin,
