@@ -44,7 +44,7 @@ void copy_int_buffer(sotl_device_t *dev, cl_mem *dst_buf, cl_mem *src_buf,
 
 void copy_box_buffer(sotl_device_t *dev)
 {
-    copy_int_buffer(dev, &dev->calc_offset_buffer, &dev->box_buffer,
+    copy_int_buffer(dev, &dev->box_buffer, &dev->calc_offset_buffer,
                     dev->domain.total_boxes + 1);
 }
 
@@ -344,6 +344,13 @@ void scan(sotl_device_t *dev, const unsigned begin, const unsigned end)
     clEnqueueNDRangeKernel (dev->queue, dev->kernel[k], 1, NULL, &global, &local, 0,
           NULL, prof_event_ptr(dev,k));
     check(err, "Failed to exec kernel: %s\n", kernel_name(k));
+
+    //int* out = malloc(sizeof(int)*end);
+    //clEnqueueReadBuffer(dev->queue, dev->calc_offset_buffer, CL_TRUE, 0,
+    //      sizeof(int) * (end-begin), out, 0, NULL, NULL );  
+    //for(int i=0; i<(end-begin); i++)
+    //  printf("%d, ", out[i]);
+    //printf("\n");
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
