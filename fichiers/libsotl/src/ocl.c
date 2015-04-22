@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+
 #ifdef HAVE_LIBGL
 #ifdef __APPLE__
 #include <OpenGL/CGLContext.h>
@@ -262,7 +263,7 @@ void ocl_one_step_move(sotl_device_t *dev)
     if (is_box_mode) {
       reset_box_buffer(dev);
       box_count_all_atoms(dev, begin, end);
-
+      
       // Calc boxes offsets
       scan(dev, 0, dev->domain.total_boxes + 1);
 

@@ -204,13 +204,13 @@ __kernel
 void gravity (__global calc_t * speed, calc_t gx, calc_t gy, calc_t gz,
 	      unsigned natoms, unsigned offset)
 {
-    unsigned index = get_global_id (0);
-
-    if(index < natoms){
-      *(speed+index) -= gx; speed += offset;
-      *(speed+index) -= gy; speed += offset;
-      *(speed+index) -= gz;
-    }
+  unsigned index = get_global_id (0);
+  
+  if(index < natoms) {
+    speed[index] -= gx; speed += offset;
+    speed[index] -= gy; speed += offset;
+    speed[index] -= gz;
+  }
 }
 
 
