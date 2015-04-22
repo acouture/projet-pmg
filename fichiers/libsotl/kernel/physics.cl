@@ -353,7 +353,7 @@ __attribute__((vec_type_hint(int)))
 __kernel
 void scan(__global int *box_buff, __global int *calc_offset_buff, unsigned begin, unsigned end)
 {
-    /*
+    
     unsigned index = get_global_id(0) + begin;
     if(index >= end)
       return;
@@ -361,18 +361,7 @@ void scan(__global int *box_buff, __global int *calc_offset_buff, unsigned begin
     calc_offset_buff[index] = 0;
     for(int i =0; i < index; i++)
        calc_offset_buff[index] += box_buff[i];
-        */
-
-    unsigned index = get_global_id(0);
-    if(index >= 1)
-      return;
-    for(int i=0; i < end; i++)
-      calc_offset_buff[i] = 0;
-    for(int i=1; i < end; i++)
-      for(int j=0; j < end; j++)
-        if(j<i)
-          calc_offset_buff[i] += box_buff[j];
-       
+        
 }
 
 /**
@@ -395,9 +384,12 @@ void box_sort_all_atoms(__global calc_t *pos_buff, __global calc_t *alt_pos_buff
     if (gid >= end)
         return;
 
+    //Récupère la postion de l'atome
     my_pos = load3coord(pos_buff + gid, offset);
+    //Récupère le numéro de la boite de l'atome à partir de sa position
     num_box = get_num_box_from_coord(my_pos, min_buff, domain_buff);
 
+    //
     int shift_atom = atomic_inc(calc_offset_buff + num_box);
 
     /* Sort atom position and speed. */
