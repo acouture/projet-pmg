@@ -263,7 +263,7 @@ void ocl_one_step_move(sotl_device_t *dev)
     if (is_box_mode) {
       reset_box_buffer(dev);
       box_count_all_atoms(dev, begin, end);
-      
+
       // Calc boxes offsets
       scan(dev, 0, dev->domain.total_boxes + 1);
 
@@ -271,12 +271,12 @@ void ocl_one_step_move(sotl_device_t *dev)
       {
         copy_box_buffer(dev);
 
-	// Sort
-	box_sort_all_atoms(dev, begin, end);
+	      // Sort
+	      box_sort_all_atoms(dev, begin, end);
 
         // box_sort_all_atoms used alternate pos & speed buffer, so we should switch...
-	dev->cur_pb = 1 - dev->cur_pb;
-	dev->cur_sb = 1 - dev->cur_sb;
+	      dev->cur_pb = 1 - dev->cur_pb;
+	      dev->cur_sb = 1 - dev->cur_sb;
       }
 
       /* Compute potential */
