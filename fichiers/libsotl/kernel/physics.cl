@@ -350,6 +350,30 @@ void box_count_all_atoms(__global calc_t *pos_buff, __global int *box_buff,
 
 __attribute__((vec_type_hint(int)))
 
+__kernel
+void scan(__global int *box_buff, __global int *calc_offset_buff, unsigned begin, unsigned end)
+{
+    /*
+    unsigned index = get_global_id(0) + begin;
+    if(index >= end)
+      return;
+
+    calc_offset_buff[index] = 0;
+    for(int i =0; i < index; i++)
+       calc_offset_buff[index] += box_buff[i];
+        */
+
+    unsigned index = get_global_id(0);
+    if(index >= 1)
+      return;
+    for(int i=0; i < end; i++)
+      calc_offset_buff[i] = 0;
+    for(int i=1; i < end; i++)
+      for(int j=0; j < end; j++)
+        if(j<i)
+          calc_offset_buff[i] += box_buff[j];
+       
+}
 
 /**
  * This kernel sorts atoms (including ghosts and leaving atoms). In single

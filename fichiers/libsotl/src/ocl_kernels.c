@@ -318,9 +318,36 @@ static void box_sort(sotl_device_t *dev, const unsigned begin,
   local = MIN(dev->tile_size, dev->max_workgroup_size);
   
   err = clEnqueueNDRangeKernel (dev->queue, dev->kernel[k], 1, NULL, &global, &local, 0,
-				NULL, prof_event_ptr(dev,k));
+        NULL, prof_event_ptr(dev,k));
   check(err, "Failed to exec kernel: %s\n", kernel_name(k));
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void scan(sotl_device_t *dev, const unsigned begin, const unsigned end)
+{
+  size_t global, local;
+  int k = KERNEL_SCAN;
+  int err = CL_SUCCESS;
+
+  err |= clSetKernelArg (dev->kernel[k], 0, sizeof (cl_mem), &dev->box_buffer);
+  err |= clSetKernelArg (dev->kernel[k], 1, sizeof (cl_mem), &dev->calc_offset_buffer);
+  err |= clSetKernelArg (dev->kernel[k], 2, sizeof (begin), &begin);
+  err |= clSetKernelArg (dev->kernel[k], 3, sizeof (end), &end);
+  check(err, "Failed to set kernel arguments: %s", kernel_name(k));
+
+
+    global = ROUND(end) - (begin & (~(dev->tile_size - 1)));
+    local = MIN(dev->tile_size, dev->max_workgroup_size);
+
+    clEnqueueNDRangeKernel (dev->queue, dev->kernel[k], 1, NULL, &global, &local, 0,
+          NULL, prof_event_ptr(dev,k));
+    check(err, "Failed to exec kernel: %s\n", kernel_name(k));
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void box_sort_all_atoms(sotl_device_t *dev, const unsigned begin,
                         const unsigned end)
@@ -353,7 +380,7 @@ void update_vertices (sotl_device_t *dev)
   size_t local = 1;
 
   err = clEnqueueNDRangeKernel (dev->queue, dev->kernel[k], 1, NULL, &global, &local, 0,
-				NULL, prof_event_ptr(dev,k));
+        NULL, prof_event_ptr(dev,k));
   check(err, "Failed to exec kernel: %s\n", kernel_name(k));
 }
 #endif
@@ -367,8 +394,8 @@ static unsigned long g_step = 0;
 #ifdef HAVE_LIBGL
 void eating_pacman(sotl_device_t *dev)
 {
-    size_t global;		// global domain size for our calculation
-    size_t local;		// local domain size for our calculation
+    size_t global;    // global domain size for our calculation
+    size_t local;   // local domain size for our calculation
 
     if(++e_step % PERIOD == 0)
         dy *= -1;
@@ -382,17 +409,17 @@ void eating_pacman(sotl_device_t *dev)
     check(err, "Failed to set kernel arguments: %s", kernel_name(k));
 
     global = vertices_per_atom * 3; // One thread per model vertex coordinate
-    local = 1;		            // Set workgroup size to 1
+    local = 1;                // Set workgroup size to 1
 
     err = clEnqueueNDRangeKernel (dev->queue, dev->kernel[k], 1, NULL, &global, &local, 0,
-				  NULL, prof_event_ptr(dev,k));
+          NULL, prof_event_ptr(dev,k));
     check(err, "Failed to exec kernel: %s\n", kernel_name(k));
 }
 
 void growing_ghost(sotl_device_t *dev)
 {
-    size_t global;		// global domain size for our calculation
-    size_t local;		// local domain size for our calculation
+    size_t global;    // global domain size for our calculation
+    size_t local;   // local domain size for our calculation
 
     if(++g_step % PERIOD == 0)
         factor = 1.0 / factor;
@@ -406,10 +433,10 @@ void growing_ghost(sotl_device_t *dev)
     check(err, "Failed to set kernel arguments: %s", kernel_name(k));
 
     global = vertices_per_atom * 3; // One thread per model vertex coordinate
-    local = 1;		            // Set workgroup size to 1
+    local = 1;                // Set workgroup size to 1
 
     err = clEnqueueNDRangeKernel (dev->queue, dev->kernel[k], 1, NULL, &global, &local, 0,
-				  NULL, prof_event_ptr(dev,k));
+          NULL, prof_event_ptr(dev,k));
     check(err, "Failed to exec kernel: %s\n", kernel_name(k));
 }
 
@@ -422,13 +449,6 @@ void resetAnimation (void)
     e_step = g_step = 0;
 }
 
-
-void scan(sotl_device_t *dev, const unsigned begin, const unsigned end)
-{
-    // TODO
-  if(begin < end) // Silly code to avoid warning
-    dev = NULL;
-}
 
 void null_kernel (sotl_device_t *dev)
 {
