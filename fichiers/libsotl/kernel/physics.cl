@@ -393,16 +393,17 @@ void scan(__global int *box_buff, __global int *calc_offset_buff, unsigned begin
   if (lid == 0)
     box_buff[group_id] = temp[TILE_SIZE-1];
   barrier(CLK_GLOBAL_MEM_FENCE);
-
+  __local int local_sumz[2000];
   // un seul thread fait un prefix sum sur les max sauvegardés
-  if(gid == 0){
+  if(lid == 0){
+	  local_sumz[0]=box_buff[0];
     for(int i = 1; i < num_groups; i++)
-      box_buff[i] += box_buff[i-1];
-  }
-  barrier(CLK_GLOBAL_MEM_FENCE);
+      local_sumz[i] = local_sumz[i-1]+box_buff[i];
+   }
+  barrier(CLK_LOCAL_MEM_FENCE);
   
   if(group_id > 0){
-	temp[lid] += box_buff[group_id - 1];
+	temp[lid] += local_sumz[group_id - 1];
   }
   
   barrier(CLK_LOCAL_MEM_FENCE);
