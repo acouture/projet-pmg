@@ -338,19 +338,34 @@ void scan(sotl_device_t *dev, const unsigned begin, const unsigned end)
   check(err, "Failed to set kernel arguments: %s", kernel_name(k));
 
 
-    global = ROUND(end) - (begin & (~(dev->tile_size - 1)));
-    local = MIN(dev->tile_size, dev->max_workgroup_size);
+  global = ROUND(end) - (begin & (~(dev->tile_size - 1)));
+  local = MIN(dev->tile_size, dev->max_workgroup_size);
 
-    clEnqueueNDRangeKernel (dev->queue, dev->kernel[k], 1, NULL, &global, &local, 0,
-          NULL, prof_event_ptr(dev,k));
-    check(err, "Failed to exec kernel: %s\n", kernel_name(k));
-
-    //int* out = malloc(sizeof(int)*end);
-    //clEnqueueReadBuffer(dev->queue, dev->calc_offset_buffer, CL_TRUE, 0,
-    //      sizeof(int) * (end-begin), out, 0, NULL, NULL );  
-    //for(int i=0; i<(end-begin); i++)
-    //  printf("%d, ", out[i]);
-    //printf("\n");
+  clEnqueueNDRangeKernel (dev->queue, dev->kernel[k], 1, NULL, &global, &local, 0,
+        NULL, prof_event_ptr(dev,k));
+  check(err, "Failed to exec kernel: %s\n", kernel_name(k));
+  //int size_box_buff= global/local;
+  int size_box_buff= end;
+  int* out = malloc(sizeof(int)*end);
+  int* box_out = malloc(sizeof(int)*size_box_buff);
+  clEnqueueReadBuffer(dev->queue, dev->calc_offset_buffer, CL_TRUE, 0,
+          sizeof(int) * (end-begin), out, 0, NULL, NULL );  
+  clEnqueueReadBuffer(dev->queue, dev->box_buffer, CL_TRUE, 0,
+          sizeof(int) * size_box_buff, box_out, 0, NULL, NULL );  
+  printf("\ncalc_offset_buffer\n");
+  for(int i=0; i<(end-begin); i++){
+    //if(i>0 && out[i-1]>out[i])
+    printf("%d ", out[i]);
+    if((i+1)%TILE_SIZE==0)
+		printf("|%d|", i/TILE_SIZE);
+  }
+  printf("\nbox_buffer\n");
+  for(int i=0; i<size_box_buff; i++){
+    printf("%d ", box_out[i]);
+    if((i+1)%TILE_SIZE==0)
+		printf("|");
+  }
+  printf("\n");
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
