@@ -344,8 +344,9 @@ void scan(sotl_device_t *dev, const unsigned begin, const unsigned end)
   clEnqueueNDRangeKernel (dev->queue, dev->kernel[k], 1, NULL, &global, &local, 0,
         NULL, prof_event_ptr(dev,k));
   check(err, "Failed to exec kernel: %s\n", kernel_name(k));
-  //int size_box_buff= global/local;
-  int size_box_buff= end;
+  /*
+  int size_box_buff= global/local;
+  //~ int size_box_buff= end;
   int* out = malloc(sizeof(int)*end);
   int* box_out = malloc(sizeof(int)*size_box_buff);
   clEnqueueReadBuffer(dev->queue, dev->calc_offset_buffer, CL_TRUE, 0,
@@ -366,6 +367,7 @@ void scan(sotl_device_t *dev, const unsigned begin, const unsigned end)
 		printf("|");
   }
   printf("\n");
+  * */
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
