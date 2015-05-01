@@ -367,7 +367,53 @@ void scan(__global int *box_buff, __global int *calc_offset_buff, unsigned begin
      calc_offset_buff[gid] += box_buff[i];
 	/**/
   
+  /*
+  __local int temp[(TILE_SIZE+1)*2];
+  int t1, t2;
+  t1=0;
+  t2=1; 
+  temp[0]=0;
+  temp[lid+1] = box_buff[gid];
+  temp[TILE_SIZE+1]=0;
+  temp[TILE_SIZE+1+lid+1] = box_buff[gid];
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  // prefix sum sur temp
+  for(int i = 1; i < TILE_SIZE+1; i=i*2){
+  //for(int i = 1; i < 4; i=i*2){
+    t1=1-t1;
+    t2=1-t1;
+    if(lid >= i)
+      temp[(t1*(TILE_SIZE+1))+lid] = temp[(t2*(TILE_SIZE+1))+lid] + temp[(t2*(TILE_SIZE+1))+lid-i];
+    else
+      temp[(t1*(TILE_SIZE+1))+lid] = temp[(t2*(TILE_SIZE+1))+lid];
+    barrier(CLK_LOCAL_MEM_FENCE);
+  }
+  temp[(t2*(TILE_SIZE+1))+lid] = temp[(t1*(TILE_SIZE+1))+lid];
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  // un thread par groupe sauvegarde le max de son temp
+  if (lid == 0)
+    box_buff[group_id] = temp[TILE_SIZE]+temp[TILE_SIZE-1];
+  barrier(CLK_GLOBAL_MEM_FENCE);
+
+  // un seul thread fait un prefix sum sur les max sauvegardés
+  if(lid == 0){
+    local_sumz[0]=box_buff[0];
+    for(int i = 1; i < num_groups; i++)
+      local_sumz[i] = local_sumz[i-1]+box_buff[i];
+   }
+  barrier(CLK_LOCAL_MEM_FENCE);
   
+  if(group_id > 0){
+    temp[lid] += local_sumz[group_id - 1];
+  }
+  
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  calc_offset_buff[gid] = temp[lid];
+  /**/
+    
   __local int temp[TILE_SIZE+1];
   temp[0]=0;
   temp[lid+1] = box_buff[gid];
