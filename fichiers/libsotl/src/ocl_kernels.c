@@ -331,15 +331,17 @@ void scan(sotl_device_t *dev, const unsigned begin, const unsigned end)
   int k = KERNEL_SCAN;
   int err = CL_SUCCESS;
 
+  global = ROUND(end) - (begin & (~(dev->tile_size - 1)));
+  local = MIN(dev->tile_size, dev->max_workgroup_size);
+
   err |= clSetKernelArg (dev->kernel[k], 0, sizeof (cl_mem), &dev->box_buffer);
   err |= clSetKernelArg (dev->kernel[k], 1, sizeof (cl_mem), &dev->calc_offset_buffer);
   err |= clSetKernelArg (dev->kernel[k], 2, sizeof (begin), &begin);
   err |= clSetKernelArg (dev->kernel[k], 3, sizeof (end), &end);
+  err |= clSetKernelArg (dev->kernel[k], 4, ((end-begin)/local + 1) * sizeof (int), NULL);
   check(err, "Failed to set kernel arguments: %s", kernel_name(k));
 
 
-  global = ROUND(end) - (begin & (~(dev->tile_size - 1)));
-  local = MIN(dev->tile_size, dev->max_workgroup_size);
 
   clEnqueueNDRangeKernel (dev->queue, dev->kernel[k], 1, NULL, &global, &local, 0,
         NULL, prof_event_ptr(dev,k));

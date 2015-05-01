@@ -351,7 +351,7 @@ void box_count_all_atoms(__global calc_t *pos_buff, __global int *box_buff,
 __attribute__((vec_type_hint(int)))
 
 __kernel
-void scan(__global int *box_buff, __global int *calc_offset_buff, unsigned begin, unsigned end)
+void scan(__global int *box_buff, __global int *calc_offset_buff, unsigned begin, unsigned end, __local int* local_sumz)
 {
   unsigned gid = get_global_id(0) + begin;
   unsigned lid = get_local_id(0);
@@ -366,6 +366,7 @@ void scan(__global int *box_buff, __global int *calc_offset_buff, unsigned begin
   for(int i =0; i < gid; i++)
      calc_offset_buff[gid] += box_buff[i];
 	/**/
+  
   
   __local int temp[TILE_SIZE+1];
   temp[0]=0;
@@ -394,7 +395,7 @@ void scan(__global int *box_buff, __global int *calc_offset_buff, unsigned begin
   if (lid == 0)
     box_buff[group_id] = temp[TILE_SIZE];
   barrier(CLK_GLOBAL_MEM_FENCE);
-  __local int local_sumz[2000];
+
   // un seul thread fait un prefix sum sur les max sauvegardés
   if(lid == 0){
 	  local_sumz[0]=box_buff[0];
@@ -412,45 +413,6 @@ void scan(__global int *box_buff, __global int *calc_offset_buff, unsigned begin
   calc_offset_buff[gid] = temp[lid];
   /*
   */
-
-/*
-  calc_offset_buff[gid] = box_buff[gid];
-  barrier(CLK_GLOBAL_MEM_FENCE);
-
-  // prefix sum sur calc_offset_buff
-  if(lid == 0)
-    if(group_id == num_groups-1){
-      for(int i = 1; i < TILE_SIZE; i++){
-        if (gid+i < end)
-          calc_offset_buff[i+(group_id*TILE_SIZE)] += calc_offset_buff[i-1+(group_id*TILE_SIZE)];
-        else
-          calc_offset_buff[i+(group_id*TILE_SIZE)] = calc_offset_buff[i-1+(group_id*TILE_SIZE)];
-      }
-    }
-    else{
-      for(int i = 1; i < TILE_SIZE; i++){
-        calc_offset_buff[i+(group_id*TILE_SIZE)] += calc_offset_buff[i-1+(group_id*TILE_SIZE)];
-      }
-    }
-  barrier(CLK_GLOBAL_MEM_FENCE);
-
-  // un thread par groupe sauvegarde le max de son temp
-  if (lid == 0)
-    box_buff[group_id] = calc_offset_buff[TILE_SIZE-1+(group_id*TILE_SIZE)];
-  barrier(CLK_GLOBAL_MEM_FENCE);
-
-  // un seul thread fait un prefix sum sur les max sauvegardés
-  if(gid == 0){
-    for(int i = 1; i < num_groups; i++)
-      box_buff[i] += box_buff[i-1];
-  }
-  barrier(CLK_GLOBAL_MEM_FENCE);
-  
-  if(group_id > 0){
-	calc_offset_buff[gid] += box_buff[group_id - 1];
-  }
-  */
-  //barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
 /**
