@@ -1,0 +1,6 @@
+1000		393
+choc1		771
+choc2		5383
+choc3		10789
+choc4		5384
+biochoc1	275118
