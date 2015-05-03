@@ -8,13 +8,15 @@ then
 	exit
 fi
 
+echo "config file: '$1'"
+
 #Launching tests for sequential version
 #Sed-ing results into a gnuplot file
 touch tmp_get_perfs
 echo "" > plot_seq.g
 for i in $(seq 2000 2000 50000)
 do
-	./bin/atoms -v -s 0 -i 10 -n $i conf/choc1.conf 2> tmp_get_perfs
+	./bin/atoms -v -s 0 -i 10 -n $i $1 2> tmp_get_perfs
 	sed -i '/^\[PERF\]/!d' tmp_get_perfs
 	sed -i '2!d' tmp_get_perfs
 	sed -i "s/^..................//" tmp_get_perfs
@@ -33,7 +35,7 @@ done
 echo "" > plot_omp1.g
 for i in $(seq 2000 2000 50000)
 do
-	OMP_NUM_THREADS=1 ./bin/atoms -v -O 0 -i 10 -n $i conf/choc1.conf 2> tmp_get_perfs
+	OMP_NUM_THREADS=1 ./bin/atoms -v -O 0 -i 10 -n $i $1 2> tmp_get_perfs
 	sed -i '/^\[PERF\]/!d' tmp_get_perfs
 	sed -i '2!d' tmp_get_perfs
 	sed -i "s/^..................//" tmp_get_perfs
@@ -71,7 +73,7 @@ done
 echo "" > plot_omp4.g
 for i in $(seq 2000 2000 50000)
 do
-	OMP_NUM_THREADS=4 ./bin/atoms -v -O 0 -i 10 -n $i conf/choc1.conf 2> tmp_get_perfs
+	OMP_NUM_THREADS=4 ./bin/atoms -v -O 0 -i 10 -n $i $1 2> tmp_get_perfs
 	sed -i '/^\[PERF\]/!d' tmp_get_perfs
 	sed -i '2!d' tmp_get_perfs
 	sed -i "s/^..................//" tmp_get_perfs
@@ -90,7 +92,7 @@ done
 echo "" > plot_omp8.g
 for i in $(seq 2000 2000 50000)
 do
-	OMP_NUM_THREADS=8 ./bin/atoms -v -O 0 -i 10 -n $i conf/choc1.conf 2> tmp_get_perfs
+	OMP_NUM_THREADS=8 ./bin/atoms -v -O 0 -i 10 -n $i $1 2> tmp_get_perfs
 	sed -i '/^\[PERF\]/!d' tmp_get_perfs
 	sed -i '2!d' tmp_get_perfs
 	sed -i "s/^..................//" tmp_get_perfs
@@ -109,7 +111,7 @@ done
 echo "" > plot_omp16.g
 for i in $(seq 2000 2000 50000)
 do
-	OMP_NUM_THREADS=16 ./bin/atoms -v -O 0 -i 10 -n $i conf/choc1.conf 2> tmp_get_perfs
+	OMP_NUM_THREADS=16 ./bin/atoms -v -O 0 -i 10 -n $i $1 2> tmp_get_perfs
 	sed -i '/^\[PERF\]/!d' tmp_get_perfs
 	sed -i '2!d' tmp_get_perfs
 	sed -i "s/^..................//" tmp_get_perfs
@@ -128,7 +130,7 @@ done
 echo "" > plot_omp_max.g
 for i in $(seq 2000 2000 50000)
 do
-        ./bin/atoms -v -O 0 -i 10 -n $i conf/choc1.conf 2> tmp_get_perfs
+        ./bin/atoms -v -O 0 -i 10 -n $i $1 2> tmp_get_perfs
         sed -i '/^\[PERF\]/!d' tmp_get_perfs
         sed -i '2!d' tmp_get_perfs
         sed -i "s/^..................//" tmp_get_perfs
