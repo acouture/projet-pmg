@@ -14,7 +14,7 @@ while true; do
     arrayA=($lineA)
     arrayB=($lineB)
     speedup=$(echo "${arrayA[1]} / ${arrayB[1]}" | bc -l)
-    echo "${arrayA[0]} $speedup" >> speedup.g
+    echo "${arrayA[0]} $speedup" >> $3
   fi
   i=1
 done 3<$1 4<$2
