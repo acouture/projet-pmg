@@ -1,6 +1,7 @@
 #!/bin/bash
 
 i=0
+echo "" > $3
 
 while true; do
   read -r lineA <&3
