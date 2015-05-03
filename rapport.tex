@@ -1,0 +1,43 @@
+\documentclass[]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage{fullpage}
+
+\title{Simulation de particules sur architectures parallèles - version OpenCL}
+\author{Alexis Couture, Marc Sarraute}
+
+\begin{document}
+\maketitle
+
+\section{Bilan}
+
+Pour ce second délivrable, nous avons implémenté une étape du tri par boite, la fonction scan, sous forme de noyau OpenCL (le reste du tri étant déjà implémenté). \\
+
+On a réussi à implémenter un scan (ou prefix sum) qui s'exécute de manière parallèle. On a en entrée un tableau box\_buffer contenant le nombre d'atomes par boites et on écrit le résultat dans calc\_offset buffer. Notre fonction se déroule de la manière suivante :
+\\
+
+\begin{itemize}
+\item On divise box\_buffer en le stockant par parties dans la mémoire locale de chaque workgroup, dans un tableau temp
+\item Chaque workgroup réalise un prefix sum sur sa partie de box\_buffer, toujours sur temp
+\item Chaque workgroup stocke la dernière valeur de son prefix sum dans box\_buffer (le workgroup i stocke son résultat dans la case i)
+\item Chaque workgroup fait un prefix sum sur box\_buffer, et le stocke en mémoire locale dans le tableau local\_sumz
+\item Chaque workgroup ajoute à son prefix sum, la somme des prefix sum obtenus par les workgroups précédents (traitant les parties antèrieures de box\_buffer)
+\item On écrit les valeurs stockées dans temp dans calc\_offset\_buffer\\
+\end{itemize}
+
+Notre noyau utilise un thread par boite et partage le travail entre plusieurs workgroups. On utilise le tiling pour réduire, mais sans éliminer, le problème de dépendance inhérent à l'opération scan, où chaque thread a besoin du résultat du thread travaillant sur la case précédente. 
+Au final, nous obtenons de moins bonnes performances qu'avec le tri par Z, signe que notre noyau est assez perfectible.\\
+
+
+\section{Limitations}
+
+Tout d'abord, il n'existe pas en OpenCL de moyen propre pour synchroniser les workgroups entre eux car ceux-ci doivent travailler de manière indépendante. Pourtant, chaque workgroup a besoin des résultats des workgroups précédent pour \"terminer\" son calcul. Pour traiter ce problème, chaque workgroup stocke son résultat en mémoire globale dans box\_buffer, à la case d'indice de son group\_id, et récupère le résultat des autres workgroups sans vérifier si ceux-ci ont fini leur calcul. \\
+
+Ensuite, notre implémentation a une complexité linéaire n + m (où n est le nombre de boites et m le nombre de workgroups) et utilise n threads (un thread par boite), ce qui n'est pas efficient. En conséquence, nous n'obtenons pas de performances supèrieures à celles du tri par Z version OpenCL, ce qui n'est pas satisfaisant étant donné que le tri par boite est théoriquement plus rapide. Une idée d'amélioration serait de suivre l'implémentation décrite dans ce papier (LE PDF DE M.HARRIS), qui utilise moins de threads et possède une complexité logarithmique.\\
+
+
+
+\section{Tests}
+
+\end{document}
