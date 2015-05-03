@@ -1,7 +1,5 @@
 #!/bin/bash
 
-echo "" > speedup.g
-
 i=0
 
 while true; do
