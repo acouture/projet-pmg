@@ -1,7 +1,7 @@
 #!/usr/bin/gnuplot
 
-set term pdf #enhanced monochrome dashed
-set output "seq-omp.pdf"
+set term png #enhanced monochrome dashed
+set output "seq-omp.png"
 
 set key left top
 
@@ -16,18 +16,18 @@ plot "plot_seq.g" with linespoints title "Séquentiel",\
      "plot_omp16.g" with linespoints title "OMP - 16 threads",\
      "plot_omp_max.g" with linespoints title "OMP - 40 threads"
 
-set output "ocl_z-ocl_box.pdf"
+set output "ocl_z-ocl_box.png"
 plot "plot_ocl_z.g" with linespoints title "Tri par Z",\
      "plot_ocl_box.g" with linespoints title "Tri par box"
 
-set output "speedup_omp.pdf"
+set output "speedup_omp.png"
 set ylabel "Speedup"
 
 plot "speedup_seq-omp.g" with linespoints title "Speedup omp"
 
-set output "speedup_ocl.pdf"
+set output "speedup_ocl.png"
 plot "speedup_seq-ocl.g" with linespoints title "Speedup ocl"
 
-set output "speedup_omp-ocl.pdf"
+set output "speedup_omp-ocl.png"
 plot "speedup_omp-ocl.g" with linespoints title "Speedup omp/ocl"
 
