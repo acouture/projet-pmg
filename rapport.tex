@@ -31,7 +31,7 @@ On a réussi à implémenter un scan (ou prefix sum) qui s'exécute de manière 
 \end{itemize}
 
 Notre noyau utilise un thread par boite et partage le travail entre plusieurs workgroups. On utilise le tiling pour réduire, mais sans éliminer, le problème de dépendance inhérent à l'opération scan, où chaque thread a besoin du résultat du thread travaillant sur la case précédente. 
-Au final, nous obtenons de moins bonnes performances qu'avec le tri par Z, signe que notre noyau est assez perfectible.\\
+Au final, nous obtenons de moins bonnes performances qu'avec le tri par Z, signe que notre noyau est très perfectible.\\
 
 
 \section{Limitations}
@@ -39,6 +39,8 @@ Au final, nous obtenons de moins bonnes performances qu'avec le tri par Z, signe
 Tout d'abord, il n'existe pas en OpenCL de moyen propre pour synchroniser les workgroups entre eux car ceux-ci doivent travailler de manière indépendante. Pourtant, chaque workgroup a besoin des résultats des workgroups précédent pour "terminer" son calcul. Pour traiter ce problème, chaque workgroup stocke son résultat en mémoire globale dans box\_buffer, à la case d'indice de son group\_id, et récupère le résultat des autres workgroups sans vérifier si ceux-ci ont fini leur calcul. \\
 
 Ensuite, notre implémentation a une complexité linéaire n + m (où n est le nombre de boites et m le nombre de workgroups) et utilise n threads (un thread par boite), ce qui n'est pas efficient. En conséquence, nous n'obtenons pas de performances supèrieures à celles du tri par Z version OpenCL, ce qui n'est pas satisfaisant étant donné que le tri par boite est théoriquement plus rapide. Une idée d'amélioration serait de suivre l'implémentation décrite dans ce papier (LE PDF DE M.HARRIS), qui utilise moins de threads et possède une complexité logarithmique.\\
+
+Enfin, notre kernel ne peut s'exécuter sur les plus grosses configurations (biochoc1 par exemple), en raison d'un grand nombre de boites. Là encore, on peut lier ce problème au grand nombre de threads utilisés mais aussi éventuellement à la quantité de mémoire locale utilisée, qui grandit avec le nombre de workgroups. 
 
 
 
@@ -58,8 +60,9 @@ On compare également 4 versions données ou implémentées :
 ... et la version OpenCL avec un tri par boite, dont on évalue les performances \\
 \end{itemize}
 
-En comparant les temps d'exécution sur différentes configurations, présentés sur les figures \ref{fig:histo-kira} et \ref{fig:histo-tesla}, on s'aperçoit que notre kernel gagne significativement en rapidité sur le meilleur support, tesla. Néanmoins, sur les 2 machines, la version OpenCL du tri par boites est toujours plus lente que la version OpenMP du tri par Z, signe que notre algorithme n'est vraiment pas optimal pour GPU.
-En étudiant les résultats par configuration, on peut remarquer le résultat constant obtenu sur choc1, choc2, choc3 et choc4, qui s'explique par un nombre de boites identique entre ces 4 configurations. Comme nous l'avons dit précédemment, notre algorithme a une complexité linéaire liée au nombre de boites, ce qui explique ce résultat.
+En comparant les temps d'exécution sur différentes configurations, présentés sur les figures \ref{fig:histo-kira} et \ref{fig:histo-tesla}, on s'aperçoit que notre kernel gagne significativement en rapidité sur le meilleur support, tesla. Néanmoins, sur les 2 machines, la version OpenCL du tri par boites est toujours plus lente que la version OpenMP du tri par Z, signe que notre algorithme n'est vraiment pas optimal pour GPU.\\
+
+En étudiant les résultats par configuration, on peut remarquer le résultat constant obtenu sur choc1, choc2, choc3 et choc4, qui s'explique par un nombre de boites identique entre ces 4 configurations. Comme nous l'avons dit précédemment, notre algorithme a une complexité linéaire liée au nombre de boites, ce qui explique ce résultat. Aussi, notre kernel ne peut pas s'exécuter sur la configuration biochoc1, qui contient bien plus de boites (et d'atomes), ce qui est assez regrettable.\\
 
 \begin{figure}[H]
   \centering
@@ -75,5 +78,16 @@ En étudiant les résultats par configuration, on peut remarquer le résultat co
   \caption{Comparaison entre les différentes versions sur plusieurs configurations - tesla}
   \label{fig:histo-tesla}
 \end{figure}
+
+Nous avons ensuite étudié les temps d'exécution de notre tri par boite et du tri par Z version OpenCL fourni, en fonction du nombre d'atomes strictement (résultats figure \ref{fig:atoms-tesla}). On y observe cette fois que notre tri par boite est bien plus rapide, avec une courbe qui augmente lentement par rapport au tri par Z. On peut expliquer ce changement de rapport de performances par le faible nombre de boites, qui induit une exécution plus rapide de notre kernel scan, et par le tri par Z, qui est théoriquement bien moins efficient que le tri par boites. \\
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{Courbe/tesla/biochoc1/ocl_z-ocl_box.png} 
+  \caption{Temps d'exécution du tri par boites et du tri par Z versions OpenCL, en fonction du nombre d'atomes, sur tesla}
+  \label{fig:atoms-tesla}
+\end{figure}
+
+Au final, ces mesures montrent que notre kernel est très perfectible, au vue des performances obtenues par le tri par Z avec OpenCL.
 
 \end{document}
